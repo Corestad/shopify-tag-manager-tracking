@@ -1,0 +1,128 @@
+<script>
+  /* Todos
+  - Add User Data Input for registered users to all events
+  - Create fallback for templates and currency
+  */
+  // Define dataLayer and the gtag function.
+  window.dataLayer = window.dataLayer || [];
+  // Initialize the global `cosd` object
+  window.cosd = window.cosd || { items: [], cart_items: [] };
+  function gtag() {
+    dataLayer.push(arguments);
+  }
+
+  // Trackable events configuration
+  const trackableEvents = {
+    view_item: true,
+    view_item_list: true,
+    view_cart: true,
+    add_to_cart: true,
+    remove_from_cart: true, // Added remove_from_cart
+    begin_checkout: true,
+    add_shipping_info: true,
+    add_payment_info: true,
+    purchase: true,
+    consent_update: true,
+    sh_info: true
+  };
+
+  // Add general shop details
+  Object.assign(cosd, {
+    page_title: '{{ page.title }}',
+    template_name: '{{ template }}',
+    shopname: '{{ shop.name }}',
+    currency: '{{ shop.currency }}',
+  });
+
+  // Add collection details if available
+  {% if collection.title %}
+    cosd.collection = {
+      collection_title: '{{ collection.title }}',
+      collection_id: '{{ collection.id }}',
+    };
+  {% endif %}
+
+  // Add customer details if logged in
+  {% if customer %}
+    cosd.user_data = {
+      sha256_email_address: '{{ customer.email | sha256 }}',
+      sha256_first_name: '{{ customer.first_name | sha256 }}',
+      sha256_last_name: '{{ customer.last_name | sha256 }}',
+      email_address: '{{ customer.email }}',
+    };
+  {% endif %}
+
+  // Populate items based on the current context (product or collection)
+  {% if product.title %}
+    /* Product */
+    cosd.items.push({
+      item_id: '{{ product.id }}',
+      item_name: '{{ product.title | remove: "'" | remove: '"' }}',
+      item_brand: '{{ product.vendor | remove: "'" | remove: '"' }}',
+      item_category: '{{ collection.title | remove: "'" | remove: '"' }}',
+      item_variant: '{{ product.selected_variant.sku }}',
+      price: parseFloat('{{ product.price | times: 0.01 }}'),
+      compprice: parseFloat('{{ product.compare_at_price_max | times: 0.01 }}'),
+    });
+  {% else %}
+    {% for product in collection.products | limit:10 %}
+      /* Collection */
+      cosd.items.push({
+        item_id: '{{ product.id }}',
+        item_name: '{{ product.title | remove: "'" | remove: '"' }}',
+        item_brand: '{{ product.vendor | remove: "'" | remove: '"' }}',
+        item_category: '{{ collection.title | remove: "'" | remove: '"' }}',
+        item_variant: '{{ product.selected_variant.sku }}',
+        price: parseFloat('{{ product.price | times: 0.01 }}'),
+        compprice: parseFloat('{{ product.compare_at_price_max | times: 0.01 }}'),
+      });
+    {% endfor %}
+  {% endif %}
+
+  // Populate cart items and calculate total if cart is not empty
+  {% if cart.item_count != 0 %}
+    {% for item in cart.items %}
+      cosd.cart_items.push({
+        item_id: '{{ item.product.id }}',
+        item_name: '{{ item.product.title | remove: "'" | remove: '"' }}',
+        item_brand: '{{ item.product.vendor | remove: "'" | remove: '"' }}',
+        item_category: '{{ item.collection.title | remove: "'" | remove: '"' }}',
+        item_variant: '{{ item.variant.sku }}',
+        price: parseFloat('{{ item.price | times: 0.01 }}'),
+        compprice: parseFloat('{{ item.product.compare_at_price_max | times: 0.01 }}'),
+        quantity: parseInt('{{ item.quantity }}'),
+      });
+    {% endfor %}
+    cosd.total = cosd.cart_items.reduce((total, item) => total + item.price * item.quantity, 0);
+  {% endif %}
+
+  // Execute the script
+
+  
+  
+  // use
+  loadScript('{{ 'cosd-tracker.js' | asset_url }}')
+  .then(() => {
+    determinePageEvent();
+    //if userdata is collected
+    _trackObj({'event': 'sh_info', 'user_data': cosd.user_data});
+  })
+  .catch(() => {
+    console.error('GTM loading failed! Handle this error');
+  });
+  
+  function loadScript(scriptUrl) {
+  const script = document.createElement('script');
+  script.src = scriptUrl;
+  document.body.appendChild(script);
+  
+  return new Promise((res, rej) => {
+    script.onload = function() {
+      res();
+    }
+    script.onerror = function () {
+      rej();
+    }
+  });
+}
+</script>
