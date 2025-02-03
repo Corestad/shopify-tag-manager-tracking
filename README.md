@@ -1,7 +1,7 @@
 # GTM Integration for Shopify
 
 This repository provides a comprehensive integration of Google Tag Manager (GTM) with Shopify. It focuses on handling e-commerce events and user consent management by leveraging both GTM and Shopify’s Customer Privacy API.
-
+Created by Corestad GmbH - https://corestad.com
 ---
 
 ## Table of Contents
