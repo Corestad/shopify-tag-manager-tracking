@@ -204,21 +204,16 @@ function setDefaultConsent(consentSettings) {
   window.dataLayer = window.dataLayer || [];
   window.dataLayer.push({
     event: 'defaultConsent',
-    'gtm.consent': { ...consentSettings }
+    'consent_default': {
+      ad_storage: consentSettings.ad_storage,
+      analytics_storage: consentSettings.analytics_storage,
+      ad_user_data: consentSettings.ad_user_data,
+      ad_personalization: consentSettings.ad_personalization
+    }
   });
 }
 
 async function consentUpdate(updatedPrivacy) {
-  window.dataLayer = window.dataLayer || [];
-  window.dataLayer.push({
-    event: 'consentUpdate',
-    'gtm.consent': {
-      ad_storage: updatedPrivacy.ad_storage,
-      analytics_storage: updatedPrivacy.analytics_storage,
-      ad_user_data: updatedPrivacy.ad_user_data,
-      ad_personalization: updatedPrivacy.ad_personalization
-    }
-  });
   try {
     uConsent = { ...updatedPrivacy };
     currentConsents = { ...updatedPrivacy };
