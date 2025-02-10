@@ -65,7 +65,7 @@
       compprice: parseFloat('{{ product.compare_at_price_max | times: 0.01 }}'),
     });
   {% else %}
-    {% for product in collection.products | limit:10 %}
+    {% for product in collection.products %}
       /* Collection */
       cosd.items.push({
         item_id: '{{ product.id }}',
