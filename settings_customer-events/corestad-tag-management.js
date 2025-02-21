@@ -33,6 +33,8 @@ const gtmConfig = {
   gtm_url: 'https://www.googletagmanager.com/'
 };
 
+let gtmLoaded = false;
+
 const privacyConfig = {
   cs: false,           // Strict: Only fire if explicit consent is available.
   cm: true,            // Consent Mode enabled.
